@@ -1,6 +1,5 @@
 use iced::executor;
 use iced::widget::{button, column, container};
-use iced::window::close;
 use iced::{window, Alignment, Application, Command, Element, Length, Theme};
 
 enum Page {
@@ -11,7 +10,7 @@ enum Page {
     Settings,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone,Copy)]
 enum StartMenuMessage {
     SinglePlayerButtonPressed,
     MultiplayerButtonPressed,
@@ -19,22 +18,22 @@ enum StartMenuMessage {
     ExitButtonPressed,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone,Copy)]
 enum SinglePlayerMessage {
     //TODO
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone,Copy)]
 enum MultiplayerMessage {
     //TODO
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone,Copy)]
 enum GameMessage {
     //TODO
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone,Copy)]
 enum SettingsMessage {
     //TODO
 }
@@ -42,7 +41,7 @@ enum SettingsMessage {
 pub struct Window {
     current_page: Page,
 }
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone,Copy)]
 pub enum Message {
     StartMenu(StartMenuMessage),
     SinglePlayer(SinglePlayerMessage),
@@ -58,7 +57,6 @@ impl Application for Window {
     type Message = Message;
 
     fn new(_flags: ()) -> (Self, Command<Self::Message>) {
-        //TODO create a constructor
         (
             Self {
                 current_page: Page::StartMenu,
@@ -73,22 +71,25 @@ impl Application for Window {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
-            // Block
+            // Block list events for buttons in start-menu
             Message::StartMenu(StartMenuMessage::SinglePlayerButtonPressed) => {
-                //TODO create event for Single Player button
+                self.current_page = Page::SinglePlayer;
+
                 Command::none()
             }
             Message::StartMenu(StartMenuMessage::MultiplayerButtonPressed) => {
-                //TODO create event for Multiplayer button
+                self.current_page = Page::Multiplayer;
+
                 Command::none()
             }
             Message::StartMenu(StartMenuMessage::SettingsButtonPressed) => {
-                //TODO create event for Settings button
+                self.current_page = Page::Settings;
+
                 Command::none()
             }
             Message::StartMenu(StartMenuMessage::ExitButtonPressed) => window::close(),
 
-            //Next block
+            //Next blocks
             Message::SinglePlayer(_) => todo!(),
             Message::Multiplayer(_) => todo!(),
             Message::Game(_) => todo!(),
@@ -122,10 +123,10 @@ impl Application for Window {
                     .center_y()
                     .into()
             }
-            Page::SinglePlayer => todo!(),
-            Page::Multiplayer => todo!(),
-            Page::Game => todo!(),
-            Page::Settings => todo!(),
+            Page::SinglePlayer => column![button("TestButton"),].into(),
+            Page::Multiplayer => column![button("TestButton"),].into(),
+            Page::Game => column![button("TestButton"),].into(),
+            Page::Settings => column![button("TestButton"),].into(),
         }
     }
 }
