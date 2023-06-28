@@ -1,51 +1,47 @@
 use iced::executor;
-use iced::widget::{button, column, container};
+use iced::widget::{button, column, container, row, text, text_input};
 use iced::{window, Alignment, Application, Command, Element, Length, Theme};
 
 enum Page {
     StartMenu,
-    SinglePlayer,
-    Multiplayer,
+    Lobby,
     Game,
     Settings,
 }
 
-#[derive(Debug, Clone,Copy)]
+#[derive(Debug, Clone)]
 enum StartMenuMessage {
-    SinglePlayerButtonPressed,
-    MultiplayerButtonPressed,
+    StartGameButtonPressed,
     SettingsButtonPressed,
     ExitButtonPressed,
 }
 
-#[derive(Debug, Clone,Copy)]
-enum SinglePlayerMessage {
-    //TODO
+#[derive(Debug, Clone)]
+enum LobbyMessage {
+    CountPlayerInputChanged(String),
+    StartGame,
 }
 
-#[derive(Debug, Clone,Copy)]
-enum MultiplayerMessage {
-    //TODO
-}
-
-#[derive(Debug, Clone,Copy)]
+#[derive(Debug, Clone)]
 enum GameMessage {
     //TODO
 }
 
-#[derive(Debug, Clone,Copy)]
+#[derive(Debug, Clone)]
 enum SettingsMessage {
     //TODO
 }
 
 pub struct Window {
     current_page: Page,
+    count_player: String,
+    max_count_player: usize,
 }
-#[derive(Debug, Clone,Copy)]
+
+#[derive(Debug, Clone)]
 pub enum Message {
     StartMenu(StartMenuMessage),
-    SinglePlayer(SinglePlayerMessage),
-    Multiplayer(MultiplayerMessage),
+    Lobby(LobbyMessage),
     Game(GameMessage),
     Settings(SettingsMessage),
 }
@@ -60,6 +56,8 @@ impl Application for Window {
         (
             Self {
                 current_page: Page::StartMenu,
+                count_player: "".to_string(),
+                max_count_player: 6,
             },
             window::change_mode(iced::window::Mode::Fullscreen),
         )
@@ -72,13 +70,8 @@ impl Application for Window {
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
             // Block list events for buttons in start-menu
-            Message::StartMenu(StartMenuMessage::SinglePlayerButtonPressed) => {
-                self.current_page = Page::SinglePlayer;
-
-                Command::none()
-            }
-            Message::StartMenu(StartMenuMessage::MultiplayerButtonPressed) => {
-                self.current_page = Page::Multiplayer;
+            Message::StartMenu(StartMenuMessage::StartGameButtonPressed) => {
+                self.current_page = Page::Lobby;
 
                 Command::none()
             }
@@ -90,8 +83,26 @@ impl Application for Window {
             Message::StartMenu(StartMenuMessage::ExitButtonPressed) => window::close(),
 
             //Next blocks
-            Message::SinglePlayer(_) => todo!(),
-            Message::Multiplayer(_) => todo!(),
+            Message::Lobby(LobbyMessage::CountPlayerInputChanged(new_value)) => {
+                if new_value == "" {
+                    self.count_player = "".to_string();
+                } else {
+                    match new_value.parse::<usize>() {
+                        Ok(t) => {
+                            self.count_player = if t <= self.max_count_player {
+                                t.to_string()
+                            } else {
+                                self.count_player.to_string()
+                            }
+                        }
+                        Err(_) => (),
+                    }
+                }
+
+                Command::none()
+            }
+            Message::Lobby(LobbyMessage::StartGame) => Command::none(),
+
             Message::Game(_) => todo!(),
             Message::Settings(_) => todo!(),
         }
@@ -101,12 +112,8 @@ impl Application for Window {
         match self.current_page {
             Page::StartMenu => {
                 let content = column![
-                    button("Single player").on_press(Message::StartMenu(
-                        StartMenuMessage::SinglePlayerButtonPressed
-                    )),
-                    button("Multiplayer").on_press(Message::StartMenu(
-                        StartMenuMessage::MultiplayerButtonPressed
-                    )),
+                    button("Start game")
+                        .on_press(Message::StartMenu(StartMenuMessage::StartGameButtonPressed)),
                     button("Settings")
                         .on_press(Message::StartMenu(StartMenuMessage::SettingsButtonPressed)),
                     button("Exit")
@@ -123,10 +130,29 @@ impl Application for Window {
                     .center_y()
                     .into()
             }
-            Page::SinglePlayer => column![button("TestButton"),].into(),
-            Page::Multiplayer => column![button("TestButton"),].into(),
-            Page::Game => column![button("TestButton"),].into(),
-            Page::Settings => column![button("TestButton"),].into(),
+            Page::Lobby => {
+                let count_player_row = row![
+                    text("Count players").size(20),
+                    text_input("", &self.count_player).on_input(|count_player_value| {
+                        Message::Lobby(LobbyMessage::CountPlayerInputChanged(count_player_value))
+                    }),
+                ]
+                .padding(20)
+                .spacing(20);
+
+                let content = column![
+                    count_player_row,
+                    button("Save settings and start game")
+                        .on_press(Message::Lobby(LobbyMessage::StartGame)),
+                ]
+                .padding(20)
+                .spacing(20)
+                .align_items(Alignment::Center);
+
+                container(content).into()
+            }
+            Page::Game => column![button("GameTestButton"),].into(),
+            Page::Settings => column![button("SettingsTestButton"),].into(),
         }
     }
 }
