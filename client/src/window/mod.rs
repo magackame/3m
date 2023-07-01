@@ -1,6 +1,8 @@
 use iced::executor;
 use iced::widget::{button, checkbox, column, container, row, text, text_input};
 use iced::{window, Alignment, Application, Command, Element, Length, Theme};
+mod rectangle;
+use rectangle::Square;
 
 enum Page {
     StartMenu,
@@ -38,6 +40,7 @@ enum SettingsMessage {
 pub struct Window {
     //Pages
     current_page: Page,
+    square: Square,
 
     //Lobby values
     count_player: String,
@@ -51,6 +54,7 @@ pub struct Window {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    None,
     StartMenu(StartMenuMessage),
     Lobby(LobbyMessage),
     Game(GameMessage),
@@ -83,6 +87,7 @@ impl Application for Window {
                 max_count_player: 6,
                 max_start_capital: 1_000_000_000.0,
                 enable_bot: false,
+                square: Square::new(30.0, 30.0),
             },
             window::change_mode(iced::window::Mode::Fullscreen),
         )
@@ -94,6 +99,7 @@ impl Application for Window {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
+            Message::None => Command::none(),
             //Start-menu block
             Message::StartMenu(StartMenuMessage::StartGameButtonPressed) => {
                 self.current_page = Page::Lobby;
@@ -260,7 +266,13 @@ impl Application for Window {
             //~View lobby
 
             //View game
-            Page::Game => column![button("GameTestButton"),].into(),
+            Page::Game => {
+                let square = self.square.view().map(move |_message| Message::None);
+
+                let content = column![square];
+
+                container(content).into()
+            }
             //~View game
             Page::Settings => column![button("SettingsTestButton"),].into(),
         }
